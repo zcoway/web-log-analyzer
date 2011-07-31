@@ -43,7 +43,7 @@ public class AccessReader {
 	/**
 	 * 
 	 */
-	String line = "Time Taken: 0.034 10.40.16.140 - - [21/Jul/2011:17:28:02 -0400] \"POST /sample/web/home/null HTTP/1.1\" 200 2049";
+	String line = "Time Taken: 0.034 10.50.76.140 - - [21/Jul/2011:17:28:02 -0400] \"POST /sample/web/home/null HTTP/1.1\" 200 2049";
 
 	/**
 	 * Main method.
