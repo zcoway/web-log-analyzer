@@ -1,0 +1,1 @@
+java -cp ./web-log-analyzer.jar org.web.acesslog.AccessReader "Time Taken: %T %h %l %u %t %r %s %b" org.web.acesslog.parser.ApacheParserImpl org.web.report.TextReport localhost_access_log.2011-08-02.log
