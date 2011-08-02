@@ -40,6 +40,8 @@ public class ApacheParserImpl implements IParser {
 	private String format = null;
 
 	private String delimiter = " ";
+	
+	private final static String NONE = "NONE";
 
 	/**
 	 * Tokenize the given format with the delimiter provided.
@@ -78,10 +80,11 @@ public class ApacheParserImpl implements IParser {
 	 * @see com.acess.log.parser.Formatter#parse(java.lang.String)
 	 */
 	@Override
-	public Access parse(String line) {
+	public Access parse(String line,String includeExtn) {
 		StringTokenizer tokenizer = new StringTokenizer(line, delimiter);
 		Iterator<String> formatItr = formatLst.iterator();
 		Access access = new Access();
+		boolean isIncludeExtn = false;
 		//int i = 0;
 		while (formatItr.hasNext()) {
 			while (tokenizer.hasMoreTokens()) {
@@ -111,10 +114,21 @@ public class ApacheParserImpl implements IParser {
 					access.setRequestMethod(token);
 					String url = tokenizer.nextToken();
 					if(url.contains("?")){
-						String url1 = url.substring(0, url.indexOf("?"));
-						access.setFirstLineOfRequest(url1);
+						url = url.substring(0, url.indexOf("?"));
+						access.setFirstLineOfRequest(url);
 					}else{
 						access.setFirstLineOfRequest(url);	
+					}
+					if(includeExtn==null || NONE.equalsIgnoreCase(includeExtn)){
+						//Do nothing.
+					}else{
+						StringTokenizer includeExtnTokenizer = new StringTokenizer(includeExtn,",");
+						while (includeExtnTokenizer.hasMoreTokens()) {
+							String extension = includeExtnTokenizer.nextToken();
+							if(url.contains(extension)){
+								isIncludeExtn = true;
+							}
+						}
 					}
 					access.setRequestProtocol(tokenizer.nextToken());
 				}else if ("%s".equals(format)) {
@@ -139,7 +153,11 @@ public class ApacheParserImpl implements IParser {
 				}
 			}
 		}
-		return access;
+		if(isIncludeExtn){
+			return access;
+		}else{
+			return null;
+		}
 	}
 
 	public String getFormat() {
