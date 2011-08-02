@@ -36,6 +36,8 @@ public class ApacheParserImpl implements IParser {
     * %I - current request thread name (can compare later with stacktraces)
 	*/
 	private List<String> formatLst = new ArrayList<String>();
+	
+	private String format = null;
 
 	private String delimiter = " ";
 
@@ -44,10 +46,24 @@ public class ApacheParserImpl implements IParser {
 	 * 
 	 * @param format
 	 */
-	public ApacheParserImpl(String format) {
-		System.out.println("### Formatter: "
-				+ this.getClass().getCanonicalName() + " ###");
-		System.out.println("### Format: " + format + " ###\n");
+	public ApacheParserImpl() {
+	}
+	
+	/* )
+	 * @see org.web.acesslog.parser.IParser#setFormat(java.lang.String)
+	 */
+	public void setFormat(String format) {
+		this.format = format;
+		populateFormatLst();
+	}
+	
+	/**
+	 * 
+	 */
+	private void populateFormatLst(){
+		System.out.println("### Formatter Impl : "
+				+ this.getClass().getCanonicalName() );
+		System.out.println("### Format : " + format );
 		StringTokenizer tokenizer = new StringTokenizer(format, delimiter);
 		while (tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken();
@@ -93,7 +109,13 @@ public class ApacheParserImpl implements IParser {
 				}else if ("%r".equals(format)){
 					//Specific handling for url string.
 					access.setRequestMethod(token);
-					access.setFirstLineOfRequest(tokenizer.nextToken());
+					String url = tokenizer.nextToken();
+					if(url.contains("?")){
+						String url1 = url.substring(0, url.indexOf("?"));
+						access.setFirstLineOfRequest(url1);
+					}else{
+						access.setFirstLineOfRequest(url);	
+					}
 					access.setRequestProtocol(tokenizer.nextToken());
 				}else if ("%s".equals(format)) {
 					access.setHttpStatusCode(token);
@@ -120,4 +142,10 @@ public class ApacheParserImpl implements IParser {
 		return access;
 	}
 
+	public String getFormat() {
+		return format;
+	}
+
+
+	
 }
