@@ -17,4 +17,11 @@ public interface IParser  {
 	 */
 	public Access parse(String line);
 	
+	/**
+	 * Set the format to be used as per user input.
+	 * @param format
+	 */
+	public void setFormat(String format);
+
+	
 }
