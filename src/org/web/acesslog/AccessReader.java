@@ -49,8 +49,8 @@ public class AccessReader {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("######### Access Log Reader Started #############\n");
-		if(args==null || args.length < 4){
-			System.out.println("Ex: \"Time Taken: %T %h %l %u %t %r %s %b\" org.web.acesslog.parser.ApacheParserImpl org.web.report.TextReport C:\\sen\\access.log");
+		if(args==null || args.length < 5){
+			System.out.println("Ex: \"Time Taken: %T %h %l %u %t %r %s %b\" org.web.acesslog.parser.ApacheParserImpl org.web.report.TextReport \".html,.xhtml,.jsp,ajax,service\" C:\\sen\\access.log");
 			System.err.println("Error: No sufficient input arguments to execute...");
 			System.exit(0);
 		}
@@ -92,13 +92,18 @@ public class AccessReader {
 				System.exit(0);
 			}
 		}
-		String fileName = args[3];
+		String includeExtn = args[3];
+		if(includeExtn==null || includeExtn.isEmpty()){
+			System.out.println("Error: IncludeExtn can't be empty, Ex: \".html,.xhtml,.jsp,.js,ajax,service\"");
+			System.exit(0);
+		}
+		String fileName = args[4];
 		if(fileName==null || fileName.isEmpty()){
 			System.err.println("Error: Please provide the access log to be parsed");
 			System.exit(0);
 		}
 		// Read/Parser logic
-		List<Access> accessList = read(fileName);
+		List<Access> accessList = read(fileName,includeExtn);
 		// Stats computation Logic
 		Map<String, Stat> stats = calcStats(accessList);
 		// Generate Report
@@ -139,7 +144,7 @@ public class AccessReader {
 	 * @param fileName
 	 * @return
 	 */
-	public static List<Access> read(String fileName) {
+	public static List<Access> read(String fileName, String ignoreExt) {
 		List<Access> accessList = new ArrayList<Access>();
 		File file = null;
 		FileReader fileReader = null;
@@ -151,7 +156,8 @@ public class AccessReader {
 			String line = buffReader.readLine();
 			while (line != null) {
 				//System.out.println(line);
-				Access access = formatter.parse(line);
+				Access access = formatter.parse(line, ignoreExt);
+				if(access!=null)
 				accessList.add(access);
 				line = buffReader.readLine();
 			}
