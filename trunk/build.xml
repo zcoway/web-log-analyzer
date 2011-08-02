@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+
+
+<project basedir="." default="makejar">
+
+
+	<property environment="env" />
+	<property name="java-home" value="C:\Program Files\Java\jdk1.5.0_21" />
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: compile                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="compile">
+		<mkdir dir="./build" />
+		<javac destdir="./build" debug="${javac.debug}" deprecation="${javac.deprecation}" nowarn="on" srcdir="./src">
+			<classpath>
+				<fileset dir="./lib" includes="*.jar" />
+			</classpath>
+		</javac>
+
+	</target>
+
+	<target name="makejar" depends="compile">
+		<jar jarfile="./dist/web-log-analyzer.jar" index="yes">
+			<fileset dir="${basedir}/build" includes="**/*" />
+		</jar>
+	</target>
+
+</project>
