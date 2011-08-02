@@ -14,8 +14,10 @@ public interface IParser  {
 	/**
 	 * IMplement parse logic for a specific web server
 	 * @param line
+	 * @param includeExtn
+	 * @return
 	 */
-	public Access parse(String line);
+	public Access parse(String line, String includeExtn);
 	
 	/**
 	 * Set the format to be used as per user input.
