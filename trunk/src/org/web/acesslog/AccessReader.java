@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.web.acesslog.parser.ApacheParserImpl;
 import org.web.acesslog.parser.IParser;
+import org.web.report.IReport;
 
 
 /**
@@ -24,22 +25,17 @@ import org.web.acesslog.parser.IParser;
  * @author Senthil Balakrishnan
  */
 public class AccessReader {
+	
+	/**
+	 * 
+	 */
+	public static IParser formatter = null;
 
 	/**
 	 * 
 	 */
-	private static String format = "Time Taken: %T %h %l %u %t %r %s %b";
-
-	/**
-	 * 
-	 */
-	private static IParser formatter;
-
-	/**
-	 * 
-	 */
-	private static String fileName = "C:\\sen\\access.log.txt";
-
+	public static IReport report = null;
+	
 	/**
 	 * 
 	 */
@@ -51,26 +47,72 @@ public class AccessReader {
 	 * @param args
 	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws IOException {
-		System.out.println("######### Access Log Reader Started #############");
-		// Parser class
-		formatter = new ApacheParserImpl(format);
+	public static void main(String[] args) throws Exception {
+		System.out.println("######### Access Log Reader Started #############\n");
+		if(args==null || args.length < 4){
+			System.out.println("Ex: \"Time Taken: %T %h %l %u %t %r %s %b\" org.web.acesslog.parser.ApacheParserImpl org.web.report.TextReport C:\\sen\\access.log");
+			System.err.println("Error: No sufficient input arguments to execute...");
+			System.exit(0);
+		}
+		//Ex: format = "Time Taken: %T %h %l %u %t %r %s %b"
+		String format = args[0];
+		if(format==null || format.isEmpty()){
+			System.err.println("Error: Log file Format can't be empty, sample value could be \"Time Taken: %T %h %l %u %t %r %s %b\"");
+			System.exit(0);
+		}
+		//Ex: formatterClass = org.web.acesslog.parser.ApacheParserImpl
+		String formatterClassStr = args[1];
+		if(formatterClassStr==null || formatterClassStr.isEmpty()){
+			System.err.println("Error: Formatter Class can't be empty, sample value could be org.web.acesslog.parser.ApacheParserImpl");
+			System.exit(0);
+		}else {
+			// Parser class
+			Class formatterClazz;
+			try {
+				formatterClazz = Class.forName(formatterClassStr);
+				formatter = (IParser) formatterClazz.newInstance();
+				formatter.setFormat(format);
+			} catch (Exception e) {
+				System.err.println("Error: Couldn't instanitate formatter class, check the input - "+formatterClassStr);
+				System.exit(0);
+			}
+		}
+		String reportClassStr = args[2];
+		if(reportClassStr==null || reportClassStr.isEmpty()){
+			System.out.println("Error: FileName can't be empty, sample value could be output");
+			System.exit(0);
+		}else{
+			// Report class
+			Class reportClazz;
+			try {
+				reportClazz = Class.forName(reportClassStr);
+				report = (IReport) reportClazz.newInstance();
+			} catch (Exception e) {
+				System.err.println("Error: Couldn't instanitate report class, check the input - "+reportClassStr);
+				System.exit(0);
+			}
+		}
+		String fileName = args[3];
+		if(fileName==null || fileName.isEmpty()){
+			System.err.println("Error: Please provide the access log to be parsed");
+			System.exit(0);
+		}
 		// Read/Parser logic
 		List<Access> accessList = read(fileName);
-		// Stats computation
+		// Stats computation Logic
 		Map<String, Stat> stats = calcStats(accessList);
-		// Writing Stats to Log
-		writeTxtStats(stats);
+		// Generate Report
+		report.generate(stats);
 		// Yet to be implemented
 		// writeCSVStats();
-		System.out.println("######### Access Log Reader Exited #############");
+		System.out.println("\n######### Access Log Reader Exited #############");
 	}
 
 	/**
 	 * @param accessList
 	 */
 	private static Map<String, Stat> calcStats(List<Access> accessList) {
-		System.out.println("### Calculating Stats...\n");
+		System.out.println("### Calculating Stats...");
 		Map<String, Stat> stats = new HashMap<String, Stat>();
 		for (Access access : accessList) {
 			// URL is mandatory, this the only way to uniqiely identify a
@@ -89,27 +131,6 @@ public class AccessReader {
 			//System.out.println("Stat:" + stat);
 		}
 		return stats;
-	}
-	
-	/**
-	 * @param stats
-	 * @throws IOException 
-	 */
-	private static void writeTxtStats(Map<String, Stat> stats) throws IOException {
-		System.out.println("### Writing Stats..\n");
-		File file = null;
-		FileWriter writer = null;
-		try {
-			file = new File("accesslog_report.txt");
-			System.out.println("### Stats file:"+file.getAbsolutePath());
-			writer = new FileWriter(file);
-			Set<Map.Entry<String, Stat>> entrySet = stats.entrySet();
-			for (Map.Entry<String, Stat> entry : entrySet) {
-				writer.write(entry.getValue().toString());
-			}
-		} finally {
-			writer.close();
-		}
 	}
 
 	/**
